@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Onboarding | Apex Client Portal</title>
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+</head>
+<body class="auth-page">
+
+<div class="auth-card" style="max-width: 540px;">
+    <div class="auth-header">
+        <div class="brand-logo-icon" style="margin: 0 auto 16px auto; width: 54px; height: 54px; font-size: 26px;">A</div>
+        <h2>Create Client Account</h2>
+        <p style="font-size: 0.9rem; margin-top: 4px;">Join Apex Studio's client collaboration workspace</p>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger" style="padding: 10px 14px; font-size: 0.82rem;">
+        <span th:text="${errorMessage}">Error occurred</span>
+    </div>
+
+    <form th:action="@{/register}" th:object="${userForm}" method="post">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" id="username" th:field="*{username}" class="form-control" placeholder="johndoe" required>
+                <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" th:field="*{password}" class="form-control" placeholder="••••••••" required>
+                <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="form-error"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="fullName">Full Name</label>
+            <input type="text" id="fullName" th:field="*{fullName}" class="form-control" placeholder="John Doe" required>
+            <div th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="form-error"></div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="email">Work Email</label>
+            <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="john@company.com" required>
+            <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="form-error"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+                <label class="form-label" for="companyName">Company / Organization</label>
+                <input type="text" id="companyName" th:field="*{companyName}" class="form-control" placeholder="Acme Inc">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">Phone Number</label>
+                <input type="text" id="phone" th:field="*{phone}" class="form-control" placeholder="+1 (555) 000-0000">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+            Complete Registration
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 24px; font-size: 0.84rem;">
+        <span style="color: var(--text-muted);">Already registered?</span>
+        <a th:href="@{/login}" style="margin-left: 6px; font-weight: 600;">Sign In</a>
+    </div>
+</div>
+
+</body>
+</html>

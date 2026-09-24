@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout('Invoice ' + ${invoice.invoiceNumber}, ~{::section}, 'invoices')}">
+<body>
+
+<section>
+    <!-- Action Toolbar (Hidden when printing) -->
+    <div class="no-print" style="max-width: 860px; margin: 0 auto 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <a th:href="@{/invoices}" class="btn btn-secondary btn-sm">&larr; Back to Invoices</a>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button onclick="window.print()" class="btn btn-secondary btn-sm">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>Print / Save PDF</span>
+            </button>
+
+            <!-- Pay Now Button if not paid -->
+            <button th:if="${invoice.status.name() != 'PAID'}" class="btn btn-success btn-sm btn-open-pay-modal">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                <span>Pay Now With Card / ACH</span>
+            </button>
+
+            <!-- Admin Status Override -->
+            <form sec:authorize="hasRole('ADMIN')" th:action="@{/invoices/{id}/status(id=${invoice.id})}" method="post" style="display: flex; gap: 6px;">
+                <select name="status" class="form-select" style="padding: 4px 8px; font-size: 0.8rem; width: auto;" onchange="this.form.submit()">
+                    <option th:each="st : ${T(com.agency.clientportal.entity.InvoiceStatus).values()}"
+                            th:value="${st}"
+                            th:text="${st.displayName}"
+                            th:selected="${st == invoice.status}"></option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Official Printable Invoice Card -->
+    <div class="invoice-paper">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <div class="brand-logo-icon" style="width: 36px; height: 36px; font-size: 16px;">A</div>
+                    <h2 style="font-size: 1.4rem;">Apex Studio Agency</h2>
+                </div>
+                <p style="font-size: 0.84rem; line-height: 1.5;">
+                    742 Evergreen Terrace, Suite 400<br>
+                    San Francisco, CA 94107<br>
+                    billing@apexagency.design
+                </p>
+            </div>
+
+            <div style="text-align: right;">
+                <h1 style="font-size: 2rem; color: #ffffff; letter-spacing: -0.03em;">INVOICE</h1>
+                <div style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: var(--primary-light); margin: 4px 0;" th:text="${invoice.invoiceNumber}">INV-2026-0001</div>
+                <div>
+                    <span class="badge" th:classappend="${invoice.status.name() == 'PAID' ? 'badge-success' : (invoice.status.name() == 'OVERDUE' ? 'badge-danger' : 'badge-warning')}">
+                        <span class="badge-dot"></span>
+                        <span th:text="${invoice.status.displayName}">Paid</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bill To & Dates Bar -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; padding: 24px 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); margin-bottom: 32px;">
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Billed To:</div>
+                <h3 style="color: #ffffff; font-size: 1.1rem;" th:text="${invoice.client.companyName}">Acme Global</h3>
+                <div style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;" th:text="'Attn: ' + ${invoice.client.fullName}">Sarah Connor</div>
+                <div style="font-size: 0.84rem; color: var(--text-muted);" th:text="${invoice.client.email}">sarah@acmecorp.io</div>
+            </div>
+
+            <div style="text-align: right; display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Issue Date: </span>
+                    <strong style="color: #ffffff;" th:text="${#temporals.format(invoice.issuedDate, 'MMMM dd, yyyy')}">Date</strong>
+                </div>
+                <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Due Date: </span>
+                    <strong style="color: #ffffff;" th:text="${#temporals.format(invoice.dueDate, 'MMMM dd, yyyy')}">Date</strong>
+                </div>
+                <div th:if="${invoice.status.name() == 'PAID'}">
+                    <span style="font-size: 0.8rem; color: #34d399;">Settled on: </span>
+                    <strong style="color: #34d399;" th:text="${#temporals.format(invoice.paidAt, 'MMM dd, yyyy')}">Paid Date</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items Table -->
+        <div class="table-responsive" style="margin-bottom: 32px;">
+            <table class="table" style="background: transparent;">
+                <thead>
+                <tr>
+                    <th>Item Description</th>
+                    <th>Engagement Project</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <strong style="color: #ffffff;" th:text="${invoice.notes != null and !#strings.isEmpty(invoice.notes) ? invoice.notes : 'Professional Services & Deliverable Retainer'}">Retainer Fee</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Milestone deliverables, engineering architecture, and creative sprint execution.</div>
+                    </td>
+                    <td>
+                        <a th:href="@{/projects/{id}(id=${invoice.project.id})}" th:text="${invoice.project.title}" style="color: var(--primary-light);">Project</a>
+                    </td>
+                    <td style="text-align: right;">
+                        <strong style="color: #ffffff; font-family: var(--font-heading);" th:text="'$' + ${#numbers.formatDecimal(invoice.amount, 1, 'COMMA', 2, 'POINT')}">$10,000.00</strong>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals Calculation Box -->
+        <div class="invoice-totals">
+            <div class="invoice-total-row">
+                <span>Subtotal:</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(invoice.amount, 1, 'COMMA', 2, 'POINT')}">$10,000.00</span>
+            </div>
+            <div class="invoice-total-row">
+                <span th:text="'Sales Tax / VAT (' + ${invoice.taxRate} + '%):'">Tax:</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(invoice.taxAmount, 1, 'COMMA', 2, 'POINT')}">$1,000.00</span>
+            </div>
+            <div class="invoice-total-row grand-total">
+                <span>Total Due:</span>
+                <span style="color: #818cf8;" th:text="'$' + ${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}">$11,000.00</span>
+            </div>
+        </div>
+
+        <!-- Notes / Payment terms footer -->
+        <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border-subtle); font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Payment Terms:</strong> Payment is due within 15 days of invoice date. Payments can be processed directly in this portal via credit card, ACH transfer, or wire.<br>
+            Bank Wire Details: Silicon Valley Bank &bull; Routing: 121000358 &bull; Account: 9820-1928-1002 &bull; Swift: SVBUS6S
+        </div>
+    </div>
+
+    <!-- Payment Simulator Modal Dialog -->
+    <div id="payInvoiceModal" class="modal-backdrop">
+        <div class="modal-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Settle Invoice Payment</h3>
+                <button type="button" class="btn btn-secondary btn-icon modal-close" style="width: 30px; height: 30px;">&times;</button>
+            </div>
+
+            <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Total to be charged:</div>
+                <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: #ffffff;" th:text="'$' + ${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}">$11,000.00</div>
+                <div style="font-size: 0.78rem; color: var(--primary-light); margin-top: 4px;" th:text="'Invoice #' + ${invoice.invoiceNumber}">INV-2026-0001</div>
+            </div>
+
+            <form th:action="@{/invoices/{id}/pay(id=${invoice.id})}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select name="paymentMethod" class="form-select">
+                        <option value="Corporate Credit Card (Stripe Instant)">Corporate Credit Card (Instant)</option>
+                        <option value="ACH Bank Direct Debit (Plaid)">ACH Direct Bank Debit</option>
+                        <option value="Wire Transfer Verified">Domestic / International Wire</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Cardholder / Authorizer Name</label>
+                    <input type="text" class="form-control" th:value="${currentUser.fullName}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Card Number (Simulated Checkout)</label>
+                    <input type="text" class="form-control" value="•••• •••• •••• 4242" disabled>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-success">Confirm &amp; Authorize Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

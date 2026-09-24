@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Apex Agency Client Portal</title>
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+</head>
+<body class="auth-page">
+
+<div class="auth-card">
+    <div class="auth-header">
+        <div class="brand-logo-icon" style="margin: 0 auto 16px auto; width: 54px; height: 54px; font-size: 26px;">A</div>
+        <h2>Apex Studio</h2>
+        <p style="font-size: 0.9rem; margin-top: 4px;">Agency &amp; Client Collaboration Portal</p>
+    </div>
+
+    <!-- Alert notifications -->
+    <div th:if="${errorMessage}" class="alert alert-danger" style="padding: 10px 14px; font-size: 0.82rem;">
+        <span th:text="${errorMessage}">Invalid username or password</span>
+    </div>
+    <div th:if="${successMessage}" class="alert alert-success" style="padding: 10px 14px; font-size: 0.82rem;">
+        <span th:text="${successMessage}">Logged out</span>
+    </div>
+    <div th:if="${param.registered}" class="alert alert-success" style="padding: 10px 14px; font-size: 0.82rem;">
+        Registration successful! Please log in below.
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
+            <label class="form-label" for="username">Username or Email</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="e.g. admin or acme_client" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label class="form-label" for="password" style="margin-bottom: 0;">Password</label>
+            </div>
+            <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+            Sign In to Portal
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+    </form>
+
+    <!-- 1-Click Demo Login Shortcuts -->
+    <div class="auth-demo-accounts">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span>Quick-Fill Demo Credentials</span>
+            <span class="badge badge-primary" style="font-size: 0.65rem;">Click to Autofill</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="demo-account-chip" data-user="admin" data-pass="admin123" style="cursor: pointer; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
+                <div>
+                    <strong style="color: #ffffff; font-size: 0.85rem;">👑 Alex Morgan</strong>
+                    <div style="font-size: 0.72rem; color: var(--primary-light);">Agency Admin / PM &bull; admin / admin123</div>
+                </div>
+                <span class="badge badge-primary" style="font-size: 0.68rem;">Admin</span>
+            </div>
+
+            <div class="demo-account-chip" data-user="acme_client" data-pass="client123" style="cursor: pointer; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
+                <div>
+                    <strong style="color: #ffffff; font-size: 0.85rem;">💼 Sarah Connor</strong>
+                    <div style="font-size: 0.72rem; color: #6ee7b7;">Client &bull; Acme Corp &bull; acme_client / client123</div>
+                </div>
+                <span class="badge badge-success" style="font-size: 0.68rem;">Client</span>
+            </div>
+
+            <div class="demo-account-chip" data-user="nexus_client" data-pass="client123" style="cursor: pointer; background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.25); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
+                <div>
+                    <strong style="color: #ffffff; font-size: 0.85rem;">🚀 David Zhang</strong>
+                    <div style="font-size: 0.72rem; color: #f0abfc;">Client &bull; Nexus AI &bull; nexus_client / client123</div>
+                </div>
+                <span class="badge badge-secondary" style="font-size: 0.68rem;">Client</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 24px; font-size: 0.84rem;">
+        <span style="color: var(--text-muted);">New client organization?</span>
+        <a th:href="@{/register}" style="margin-left: 6px; font-weight: 600;">Create Client Account</a>
+    </div>
+</div>
+
+<script th:src="@{/js/portal.js}"></script>
+</body>
+</html>

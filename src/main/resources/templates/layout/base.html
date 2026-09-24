@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout (title, content, activeNav)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' | Apex Client Portal'">Apex Client Portal</title>
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+</head>
+<body>
+<div class="app-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo-icon">A</div>
+            <div class="brand-text">
+                <h2>Apex Studio</h2>
+                <span>Client Portal</span>
+            </div>
+        </div>
+
+        <nav class="nav-group">
+            <span class="nav-label">Main Navigation</span>
+            <a th:href="@{/dashboard}" class="nav-link" th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a th:href="@{/projects}" class="nav-link" th:classappend="${activeNav == 'projects'} ? 'active'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                <span>Projects</span>
+            </a>
+            <a th:href="@{/deliverables}" class="nav-link" th:classappend="${activeNav == 'deliverables'} ? 'active'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Deliverables</span>
+            </a>
+            <a th:href="@{/invoices}" class="nav-link" th:classappend="${activeNav == 'invoices'} ? 'active'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Invoices &amp; Billing</span>
+            </a>
+            <a th:href="@{/files}" class="nav-link" th:classappend="${activeNav == 'files'} ? 'active'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+                <span>Files &amp; Assets</span>
+            </a>
+            <a th:href="@{/messages}" class="nav-link" th:classappend="${activeNav == 'messages'} ? 'active'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                <span>Discussion</span>
+            </a>
+        </nav>
+
+        <!-- Current User Profile in Sidebar -->
+        <div class="sidebar-user" sec:authorize="isAuthenticated()">
+            <div class="avatar" th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? 'avatar-admin'">
+                <span sec:authentication="name" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <div class="user-info">
+                <div class="user-name" sec:authentication="name">User</div>
+                <div class="user-role">
+                    <span sec:authorize="hasRole('ADMIN')" class="badge badge-primary" style="padding: 2px 6px; font-size: 0.65rem;">Agency PM</span>
+                    <span sec:authorize="hasRole('CLIENT')" class="badge badge-success" style="padding: 2px 6px; font-size: 0.65rem;">Client</span>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" class="btn btn-secondary btn-icon" title="Logout" style="width: 32px; height: 32px;">
+                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content Canvas -->
+    <div class="main-content">
+        <!-- Top Sticky Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <h1 class="page-title" th:text="${title}">Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/projects/new}" class="btn btn-primary btn-sm">
+                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>New Project</span>
+                    </a>
+                </div>
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/invoices/new}" class="btn btn-secondary btn-sm">
+                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m0 0l-6-6m6 6H3"/></svg>
+                        <span>Issue Invoice</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Canvas Body -->
+        <main class="canvas">
+            <!-- Global Flash Messages -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+
+            <!-- Page Specific Content -->
+            <div th:replace="${content}"></div>
+        </main>
+    </div>
+</div>
+
+<script th:src="@{/js/portal.js}"></script>
+</body>
+</html>

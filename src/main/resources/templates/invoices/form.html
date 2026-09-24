@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Issue Invoice', ~{::section}, 'invoices')}">
+<body>
+
+<section>
+    <div style="max-width: 740px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Issue Client Invoice</h2>
+                    <p style="font-size: 0.88rem; margin-top: 4px;">Generate an itemized invoice for milestone delivery or monthly agency retainer.</p>
+                </div>
+                <a th:href="@{/invoices}" class="btn btn-secondary btn-sm">&larr; Back to Invoices</a>
+            </div>
+
+            <form th:action="@{/invoices/new}" th:object="${invoiceForm}" method="post">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+                    <div class="form-group">
+                        <label class="form-label" for="invoiceNumber">Invoice Number</label>
+                        <input type="text" id="invoiceNumber" th:field="*{invoiceNumber}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="status">Initial Status</label>
+                        <select id="status" th:field="*{status}" class="form-select">
+                            <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.displayName}">Sent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+                    <div class="form-group">
+                        <label class="form-label" for="projectId">Engagement Project</label>
+                        <select id="projectId" th:field="*{projectId}" class="form-select" required>
+                            <option value="">-- Select Project --</option>
+                            <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.title}">Project</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="clientId">Client Account</label>
+                        <select id="clientId" th:field="*{clientId}" class="form-select" required>
+                            <option value="">-- Select Client --</option>
+                            <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName} + ' (' + ${c.companyName} + ')'">Client</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+                    <div class="form-group">
+                        <label class="form-label" for="issuedDate">Issue Date</label>
+                        <input type="date" id="issuedDate" th:field="*{issuedDate}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="dueDate">Payment Due Date</label>
+                        <input type="date" id="dueDate" th:field="*{dueDate}" class="form-control" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 18px;">
+                    <div class="form-group">
+                        <label class="form-label" for="amount">Subtotal Amount ($ USD)</label>
+                        <input type="number" step="0.01" id="amount" th:field="*{amount}" class="form-control" placeholder="10000.00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="taxRate">Tax / VAT Rate (%)</label>
+                        <input type="number" step="0.1" id="taxRate" th:field="*{taxRate}" class="form-control" placeholder="10.0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="notes">Item Description / Milestone Summary</label>
+                    <textarea id="notes" th:field="*{notes}" class="form-control" rows="3" placeholder="e.g. Milestone 2 Completion: Interactive Figma UI Kit & Prototype Sign-off"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 14px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-subtle);">
+                    <a th:href="@{/invoices}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Issue Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

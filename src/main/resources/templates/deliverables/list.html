@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout('Client Deliverables', ~{::section}, 'deliverables')}">
+<body>
+
+<section>
+    <!-- Filter Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a th:href="@{/deliverables}" class="btn btn-sm" th:classappend="${selectedStatus == null} ? 'btn-primary' : 'btn-secondary'">
+                All Deliverables (<span th:text="${#lists.size(deliverables)}">0</span>)
+            </a>
+            <a th:each="st : ${statuses}"
+               th:href="@{/deliverables(status=${st})}"
+               class="btn btn-sm"
+               th:classappend="${selectedStatus == st} ? 'btn-primary' : 'btn-secondary'"
+               th:text="${st.displayName}">
+                Status
+            </a>
+        </div>
+
+        <div sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/deliverables/new}" class="btn btn-primary btn-sm">+ Publish Deliverable</a>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(deliverables)}" class="card" style="text-align: center; padding: 60px 20px;">
+        <div class="brand-logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px; opacity: 0.6;">📦</div>
+        <h3>No deliverables found</h3>
+        <p style="margin-top: 6px;">There are currently no deliverables matching the selected filter.</p>
+    </div>
+
+    <!-- Deliverables Cards -->
+    <div th:unless="${#lists.isEmpty(deliverables)}" style="display: flex; flex-direction: column; gap: 18px;">
+        <div th:each="d : ${deliverables}" class="card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 12px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <h3 style="color: #ffffff;" th:text="${d.title}">Deliverable Title</h3>
+                        <span class="badge badge-secondary" th:text="${d.version}">v1.0</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted);">
+                        <span>Project: <strong style="color: #ffffff;" th:text="${d.project.title}">Acme Corp</strong></span>
+                        <span th:if="${d.milestone != null}" th:text="' &bull; Milestone: ' + ${d.milestone.title}"></span>
+                        <span th:text="' &bull; Submitted on ' + ${#temporals.format(d.submittedAt, 'MMM dd, yyyy')}"></span>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="badge" th:classappend="${d.status.name() == 'APPROVED' ? 'badge-success' : (d.status.name() == 'PENDING_REVIEW' ? 'badge-warning' : 'badge-danger')}">
+                        <span class="badge-dot"></span>
+                        <span th:text="${d.status.displayName}">Pending Review</span>
+                    </span>
+
+                    <button class="btn btn-primary btn-sm btn-review-deliverable"
+                            th:data-id="${d.id}"
+                            th:data-title="${d.title}"
+                            th:data-feedback="${d.clientFeedback}">
+                        Review &amp; Feedback
+                    </button>
+                </div>
+            </div>
+
+            <p style="font-size: 0.92rem; margin-bottom: 16px;" th:text="${d.description}">Description text...</p>
+
+            <!-- Asset Link -->
+            <div th:if="${d.assetUrl != null and !#strings.isEmpty(d.assetUrl)}" style="margin-bottom: 14px;">
+                <a th:href="${d.assetUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <span>View Staging Build / External Asset:</span>
+                    <span style="color: var(--primary-light); text-decoration: underline;" th:text="${d.assetUrl}">Link</span>
+                </a>
+            </div>
+
+            <!-- Client Feedback Box if present -->
+            <div th:if="${d.clientFeedback != null and !#strings.isEmpty(d.clientFeedback)}" style="background: rgba(99, 102, 241, 0.08); border-left: 3px solid var(--primary); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+                <div style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; color: var(--primary-light); margin-bottom: 4px;">Client Feedback:</div>
+                <div style="font-size: 0.88rem; color: #ffffff;" th:text="${d.clientFeedback}">Feedback note...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Deliverable Modal Dialog -->
+    <div id="reviewDeliverableModal" class="modal-backdrop">
+        <div class="modal-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 id="reviewDeliverableTitle">Review Deliverable</h3>
+                <button type="button" class="btn btn-secondary btn-icon modal-close" style="width: 30px; height: 30px;">&times;</button>
+            </div>
+
+            <form id="reviewDeliverableForm" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="form-group">
+                    <label class="form-label">Approval Decision</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <label style="cursor: pointer; padding: 12px; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: var(--radius-sm); background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; gap: 10px;">
+                            <input type="radio" name="status" value="APPROVED" checked style="accent-color: #10b981;">
+                            <strong style="color: #6ee7b7;">Approve Work</strong>
+                        </label>
+                        <label style="cursor: pointer; padding: 12px; border: 1px solid rgba(244, 63, 94, 0.4); border-radius: var(--radius-sm); background: rgba(244, 63, 94, 0.1); display: flex; align-items: center; gap: 10px;">
+                            <input type="radio" name="status" value="CHANGES_REQUESTED" style="accent-color: #f43f5e;">
+                            <strong style="color: #fda4af;">Request Revisions</strong>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="clientFeedbackInput">Client Feedback &amp; Revision Notes</label>
+                    <textarea id="clientFeedbackInput" name="clientFeedback" class="form-control" rows="4" placeholder="Share specific feedback, required adjustments, or sign-off notes..."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

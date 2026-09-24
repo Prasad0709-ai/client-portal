@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout('Executive Dashboard', ~{::section}, 'dashboard')}">
+<body>
+
+<section>
+    <!-- Welcome Banner -->
+    <div class="card" style="margin-bottom: 32px; background: linear-gradient(135deg, rgba(30, 27, 75, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(99, 102, 241, 0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <span class="badge badge-primary" style="margin-bottom: 8px;">Workspace Overview</span>
+                <h2>Welcome back, <span th:text="${currentUser.fullName}">Alex Morgan</span> 👋</h2>
+                <p style="margin-top: 6px; font-size: 0.95rem;">
+                    <span sec:authorize="hasRole('ADMIN')">Agency Portfolio Dashboard &bull; Manage client milestones, deliverables, and invoices.</span>
+                    <span sec:authorize="hasRole('CLIENT')">Client Workspace for <strong style="color: #ffffff;" th:text="${currentUser.companyName}">Acme Corp</strong>. Track your deliverables and progress in real-time.</span>
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a th:href="@{/messages}" class="btn btn-secondary btn-sm">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    <span>Discussion Room</span>
+                </a>
+                <a th:href="@{/files}" class="btn btn-secondary btn-sm">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    <span>Asset Vault</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 KPI Stat Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Active Projects</div>
+                <div class="stat-value" th:text="${activeProjectsCount}">2</div>
+            </div>
+            <div class="stat-icon blue">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Reviews Pending</div>
+                <div class="stat-value" th:text="${pendingReviewsCount}" style="color: #fbbf24;">1</div>
+            </div>
+            <div class="stat-icon amber">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Pending Invoices</div>
+                <div class="stat-value" style="color: #cbd5e1;" th:text="'$' + ${#numbers.formatDecimal(financialSummary.totalPending, 1, 'COMMA', 2, 'POINT')}">$12,000.00</div>
+            </div>
+            <div class="stat-icon purple">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Total Settled</div>
+                <div class="stat-value" style="color: #34d399;" th:text="'$' + ${#numbers.formatDecimal(financialSummary.totalPaid, 1, 'COMMA', 2, 'POINT')}">$25,000.00</div>
+            </div>
+            <div class="stat-icon emerald">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Projects Grid -->
+    <div style="margin-bottom: 36px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h3>Active Client Engagements</h3>
+                <p style="font-size: 0.85rem;">Current projects, milestone progress, and delivery timelines</p>
+            </div>
+            <a th:href="@{/projects}" class="btn btn-secondary btn-sm">View All Projects</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px;">
+            <div th:each="project : ${projects}" class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                        <span class="badge" th:classappend="${project.status.name() == 'IN_PROGRESS' ? 'badge-primary' : (project.status.name() == 'COMPLETED' ? 'badge-success' : 'badge-warning')}">
+                            <span class="badge-dot"></span>
+                            <span th:text="${project.status.displayName}">In Progress</span>
+                        </span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);" th:text="'Due: ' + ${#temporals.format(project.targetDate, 'MMM dd, yyyy')}">Due: Dec 30, 2026</span>
+                    </div>
+
+                    <h4 style="margin-bottom: 8px;">
+                        <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.title}" style="color: #ffffff;">Project Title</a>
+                    </h4>
+                    <p style="font-size: 0.85rem; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" th:text="${project.description}">Description text...</p>
+                </div>
+
+                <div>
+                    <!-- Progress Bar -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+                            <span style="color: var(--text-muted); font-weight: 600;">Overall Progress</span>
+                            <span class="project-progress-text" style="color: #ffffff; font-weight: 700;" th:text="${project.progressPercentage} + '%'">40%</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar project-progress-fill" th:style="'width: ' + ${project.progressPercentage} + '%;'"></div>
+                        </div>
+                    </div>
+
+                    <!-- Client & Budget footer -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 14px; font-size: 0.82rem;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="avatar" style="width: 26px; height: 26px; font-size: 11px;">
+                                <span th:text="${#strings.substring(project.client.fullName, 0, 1)}">C</span>
+                            </div>
+                            <span style="color: var(--text-secondary);" th:text="${project.client.companyName}">Client Corp</span>
+                        </div>
+                        <a th:href="@{/projects/{id}(id=${project.id})}" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.75rem;">
+                            Open Details &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Section: Deliverables for Review & Recent Invoices -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Deliverables Needing Action -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">
+                        <svg style="width: 20px; height: 20px; color: #fbbf24;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        <span>Deliverables</span>
+                    </h3>
+                </div>
+                <a th:href="@{/deliverables}" class="btn btn-secondary btn-sm">All Deliverables</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(deliverables)}" style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
+                No deliverables currently recorded.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(deliverables)}" style="display: flex; flex-direction: column; gap: 12px;">
+                <div th:each="deliv, iterStat : ${deliverables}" th:if="${iterStat.index < 4}" style="padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="color: #ffffff; font-size: 0.9rem;" th:text="${deliv.title}">Deliverable Name</strong>
+                            <span class="badge badge-secondary" style="font-size: 0.65rem;" th:text="${deliv.version}">v1.0</span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);" th:text="${deliv.project.title}">Project Title</div>
+                    </div>
+                    <div>
+                        <span class="badge" th:classappend="${deliv.status.name() == 'APPROVED' ? 'badge-success' : (deliv.status.name() == 'PENDING_REVIEW' ? 'badge-warning' : 'badge-danger')}">
+                            <span th:text="${deliv.status.displayName}">Pending Review</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Billing -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">
+                        <svg style="width: 20px; height: 20px; color: #34d399;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span>Recent Invoices</span>
+                    </h3>
+                </div>
+                <a th:href="@{/invoices}" class="btn btn-secondary btn-sm">All Invoices</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(invoices)}" style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
+                No invoices issued yet.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(invoices)}" style="display: flex; flex-direction: column; gap: 12px;">
+                <div th:each="inv, iterStat : ${invoices}" th:if="${iterStat.index < 4}" style="padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 700; color: #ffffff; font-size: 0.9rem;" th:text="${inv.invoiceNumber}">INV-2026-0001</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);" th:text="'Due: ' + ${#temporals.format(inv.dueDate, 'MMM dd, yyyy')}">Due: Dec 15, 2026</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-family: var(--font-heading); font-weight: 800; color: #ffffff; font-size: 1rem;" th:text="'$' + ${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}">$12,000.00</div>
+                        <span class="badge" th:classappend="${inv.status.name() == 'PAID' ? 'badge-success' : 'badge-warning'}" style="margin-top: 4px;">
+                            <span th:text="${inv.status.displayName}">Paid</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout('Invoices & Billing', ~{::section}, 'invoices')}">
+<body>
+
+<section>
+    <!-- Financial Overview Metric Cards -->
+    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 28px;">
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Pending / Outstanding</div>
+                <div class="stat-value" style="color: #fbbf24;" th:text="'$' + ${#numbers.formatDecimal(financialSummary.totalPending, 1, 'COMMA', 2, 'POINT')}">$12,000.00</div>
+                <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 6px;" th:text="${financialSummary.countPending} + ' invoices awaiting settlement'">1 awaiting settlement</div>
+            </div>
+            <div class="stat-icon amber">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Settled Payments</div>
+                <div class="stat-value" style="color: #34d399;" th:text="'$' + ${#numbers.formatDecimal(financialSummary.totalPaid, 1, 'COMMA', 2, 'POINT')}">$25,000.00</div>
+                <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 6px;" th:text="${financialSummary.countPaid} + ' completed transactions'">2 transactions</div>
+            </div>
+            <div class="stat-icon emerald">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-info">
+                <div class="stat-label">Overdue Amount</div>
+                <div class="stat-value" style="color: #fda4af;" th:text="'$' + ${#numbers.formatDecimal(financialSummary.totalOverdue, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 6px;">Zero overdue accounts</div>
+            </div>
+            <div class="stat-icon rose" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e;">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Action Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a th:href="@{/invoices}" class="btn btn-sm" th:classappend="${selectedStatus == null} ? 'btn-primary' : 'btn-secondary'">
+                All Invoices (<span th:text="${#lists.size(invoices)}">0</span>)
+            </a>
+            <a th:each="st : ${statuses}"
+               th:href="@{/invoices(status=${st})}"
+               class="btn btn-sm"
+               th:classappend="${selectedStatus == st} ? 'btn-primary' : 'btn-secondary'"
+               th:text="${st.displayName}">
+                Status
+            </a>
+        </div>
+
+        <div sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/invoices/new}" class="btn btn-primary btn-sm">+ Issue New Invoice</a>
+        </div>
+    </div>
+
+    <!-- Invoices Table Card -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div th:if="${#lists.isEmpty(invoices)}" style="text-align: center; padding: 48px; color: var(--text-muted);">
+            No invoice records found matching the criteria.
+        </div>
+
+        <div th:unless="${#lists.isEmpty(invoices)}" class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Engagement Project</th>
+                    <th>Client Organization</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="inv : ${invoices}">
+                    <td>
+                        <strong style="color: #ffffff; font-family: var(--font-heading);" th:text="${inv.invoiceNumber}">INV-2026-0001</strong>
+                    </td>
+                    <td>
+                        <a th:href="@{/projects/{id}(id=${inv.project.id})}" th:text="${inv.project.title}" style="color: var(--primary-light);">Project Name</a>
+                    </td>
+                    <td th:text="${inv.client.companyName}">Company</td>
+                    <td th:text="${#temporals.format(inv.issuedDate, 'MMM dd, yyyy')}">Issued Date</td>
+                    <td th:text="${#temporals.format(inv.dueDate, 'MMM dd, yyyy')}">Due Date</td>
+                    <td>
+                        <strong style="color: #ffffff; font-family: var(--font-heading); font-size: 1rem;" th:text="'$' + ${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}">$10,000.00</strong>
+                    </td>
+                    <td>
+                        <span class="badge" th:classappend="${inv.status.name() == 'PAID' ? 'badge-success' : (inv.status.name() == 'OVERDUE' ? 'badge-danger' : 'badge-warning')}">
+                            <span class="badge-dot"></span>
+                            <span th:text="${inv.status.displayName}">Paid</span>
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="@{/invoices/{id}(id=${inv.id})}" class="btn btn-secondary btn-sm">
+                            <span>View Statement</span>
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

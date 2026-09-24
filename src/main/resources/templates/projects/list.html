@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout('Client Projects', ~{::section}, 'projects')}">
+<body>
+
+<section>
+    <!-- Top Filter Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a th:href="@{/projects}" class="btn btn-sm" th:classappend="${selectedStatus == null} ? 'btn-primary' : 'btn-secondary'">
+                All Projects (<span th:text="${#lists.size(projects)}">0</span>)
+            </a>
+            <a th:each="st : ${statuses}"
+               th:href="@{/projects(status=${st})}"
+               class="btn btn-sm"
+               th:classappend="${selectedStatus == st} ? 'btn-primary' : 'btn-secondary'"
+               th:text="${st.displayName}">
+                Status
+            </a>
+        </div>
+
+        <div sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/projects/new}" class="btn btn-primary btn-sm">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Create New Project</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(projects)}" class="card" style="text-align: center; padding: 60px 20px;">
+        <div class="brand-logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px; opacity: 0.6;">📁</div>
+        <h3>No projects found</h3>
+        <p style="margin-top: 6px;">There are no projects matching the selected filter criteria.</p>
+        <div style="margin-top: 20px;" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/projects/new}" class="btn btn-primary btn-sm">Create New Project</a>
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div th:unless="${#lists.isEmpty(projects)}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px;">
+        <div th:each="project : ${projects}" class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <span class="badge" th:classappend="${project.status.name() == 'IN_PROGRESS' ? 'badge-primary' : (project.status.name() == 'COMPLETED' ? 'badge-success' : (project.status.name() == 'REVIEW' ? 'badge-warning' : 'badge-secondary'))}">
+                        <span class="badge-dot"></span>
+                        <span th:text="${project.status.displayName}">In Progress</span>
+                    </span>
+                    <span style="font-size: 0.82rem; color: var(--text-muted);" th:text="'Due ' + ${#temporals.format(project.targetDate, 'MMM dd, yyyy')}">Due Dec 2026</span>
+                </div>
+
+                <h3 style="margin-bottom: 10px;">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.title}" style="color: #ffffff;">Project Title</a>
+                </h3>
+                <p style="font-size: 0.88rem; margin-bottom: 24px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;" th:text="${project.description}">
+                    Project description goes here...
+                </p>
+            </div>
+
+            <div>
+                <!-- Progress Indicator -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 8px;">
+                        <span style="color: var(--text-muted); font-weight: 600;">Milestones Completed</span>
+                        <span class="project-progress-text" style="color: #ffffff; font-weight: 700;" th:text="${project.progressPercentage} + '%'">0%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar project-progress-fill" th:style="'width: ' + ${project.progressPercentage} + '%;'"></div>
+                    </div>
+                </div>
+
+                <!-- Footer with Client & Actions -->
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="avatar" style="width: 32px; height: 32px; font-size: 13px;">
+                            <span th:text="${#strings.substring(project.client.fullName, 0, 1)}">C</span>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #ffffff;" th:text="${project.client.companyName}">Client Name</div>
+                            <div style="font-size: 0.74rem; color: var(--text-muted);" th:text="'Budget: $' + ${#numbers.formatDecimal(project.budget, 1, 'COMMA', 0, 'POINT')}">$35,000</div>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/projects/{id}(id=${project.id})}" class="btn btn-secondary btn-sm">
+                        <span>Workspace</span>
+                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

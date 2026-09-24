@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout('Asset & Document Vault', ~{::section}, 'files')}">
+<body>
+
+<section>
+    <!-- Filter Bar & Upload Modal Trigger -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a th:href="@{/files}" class="btn btn-sm" th:classappend="${selectedCategory == null} ? 'btn-primary' : 'btn-secondary'">
+                All Assets (<span th:text="${#lists.size(files)}">0</span>)
+            </a>
+            <a th:each="cat : ${categories}"
+               th:href="@{/files(category=${cat})}"
+               class="btn btn-sm"
+               th:classappend="${selectedCategory == cat} ? 'btn-primary' : 'btn-secondary'"
+               th:text="${cat.displayName}">
+                Category
+            </a>
+        </div>
+    </div>
+
+    <!-- Layout: Vault Grid + Upload Side Form -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 28px;">
+        <!-- Files List -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); background: rgba(15, 23, 42, 0.4);">
+                <h3 class="card-title">Shared Asset Repository</h3>
+                <p style="font-size: 0.8rem; margin-top: 4px;">Download project agreements, design specifications, and exported release packages.</p>
+            </div>
+
+            <div th:if="${#lists.isEmpty(files)}" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                <div class="brand-logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px; opacity: 0.6;">📄</div>
+                <h3>No documents in vault</h3>
+                <p style="margin-top: 6px;">Upload a file using the form to share assets securely.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(files)}" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+                <div th:each="f : ${files}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div class="stat-icon blue" style="width: 44px; height: 44px;">
+                            <svg style="width: 22px; height: 22px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #ffffff; font-size: 0.95rem;" th:text="${f.fileName}">Document.pdf</div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                                <span class="badge badge-secondary" style="font-size: 0.65rem; padding: 1px 6px;" th:text="${f.category.displayName}">Category</span>
+                                <span th:text="' &bull; ' + ${f.formattedFileSize}"> &bull; 2.4 MB</span>
+                                <span th:text="' &bull; ' + ${f.project.title}"> &bull; Project</span>
+                                <span th:text="' &bull; ' + ${#temporals.format(f.uploadedAt, 'MMM dd, yyyy')}"> &bull; Date</span>
+                            </div>
+                            <div th:if="${f.description != null}" style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;" th:text="${f.description}">Note...</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <a th:href="@{/files/{id}/download(id=${f.id})}" class="btn btn-secondary btn-sm">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <span>Download</span>
+                        </a>
+
+                        <form sec:authorize="hasRole('ADMIN')" th:action="@{/files/{id}/delete(id=${f.id})}" method="post">
+                            <button type="submit" class="btn btn-secondary btn-icon" style="width: 32px; height: 32px; color: var(--accent-rose);" onclick="return confirm('Delete this file?')" title="Delete">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form Card -->
+        <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">
+                <svg style="width: 20px; height: 20px; color: #818cf8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <span>Upload New Asset</span>
+            </h3>
+
+            <form th:action="@{/files/upload}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label class="form-label">Engagement Project</label>
+                    <select name="projectId" class="form-select" required>
+                        <option value="">-- Choose Project --</option>
+                        <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.title}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">File to Upload</label>
+                    <input type="file" name="file" class="form-control" required>
+                    <span class="form-text">Max file size: 25MB (PDF, ZIP, PNG, Figma exports)</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat.displayName}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description / Tags</label>
+                    <input type="text" name="description" class="form-control" placeholder="e.g. Master Services Agreement v2.1">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    Upload File
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>
