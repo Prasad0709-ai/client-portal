@@ -1,129 +1,209 @@
-# Apex Agency Client Portal
+# Client Portal & Project Management System
 
-A modern, full-stack Java web application built with **Spring Boot 3.3**, **Spring Security 6**, **Hibernate / Spring Data JPA**, **MySQL / H2**, and **Thymeleaf**. Designed specifically for agencies and freelancers to manage client engagements, project milestones, deliverable approvals, invoicing, file repositories, and team communications.
+A production-grade, full-stack web application designed for modern digital agencies, consulting firms, and freelancers to streamline client collaboration, project milestone tracking, deliverable reviews, financial billing, shared document repositories, and real-time project messaging.
 
----
-
-## 🚀 Key Features
-
-- **Project Milestones & Progress Tracking**
-  - Interactive timeline view with real-time progress percentage recalculation.
-  - Interactive check-off milestones with live AJAX updates without page reloads.
-  - Multi-tab project workspace (`Milestones`, `Deliverables`, `Invoices`, `Files`, `Discussion`).
-
-- **Deliverables & Client Review Workflow**
-  - Agency team submits deliverables with versioning and staging URLs.
-  - Clients can officially **Approve** or **Request Changes** with feedback notes.
-  - Real-time review status badges (`Pending Review`, `Approved`, `Changes Requested`).
-
-- **Invoicing & Billing Center**
-  - Executive financial summary dashboard (Settled revenue, Outstanding balance, Overdue alerts).
-  - Clean, printable invoice statement (`window.print()` / PDF export).
-  - Integrated payment simulator modal (Card, ACH Bank Debit, Wire transfer).
-
-- **Categorized Document & Asset Vault**
-  - Filterable file repository by category (`Contract & SOW`, `Design & Specs`, `Deliverable Asset`, `Brand Guidelines`, etc.).
-  - Secure upload handling with direct streaming file downloads.
-
-- **Real-Time Project Discussions**
-  - Dedicated communication channel per client engagement.
-  - Client vs. Agency message bubbles with timestamps and read indicators.
-  - Background polling REST endpoint for seamless updates.
-
-- **Role-Based Access Control (RBAC)**
-  - `ROLE_ADMIN` (Agency Lead / PM): Full access to create/edit projects, issue invoices, publish deliverables, and manage milestones.
-  - `ROLE_CLIENT` (Client Contact): Access scoped strictly to their company's projects, deliverables, invoices, and files.
+Built with **Spring Boot 3.3.4**, **Spring Security 6**, **Hibernate / Spring Data JPA**, **MySQL & H2**, and **Thymeleaf**, the platform features a responsive glassmorphic dark-mode interface with zero external CSS frameworks.
 
 ---
 
-## 🛠️ Technology Stack & Architecture
+## 🌟 Overview & Key Highlights
 
-- **Backend**: Java 21, Spring Boot 3.3.4
-- **Security**: Spring Security 6 with BCrypt password hashing, session management, CSRF protection, and role-based method security (`@PreAuthorize`).
-- **Persistence**: Hibernate 6 / Spring Data JPA with `JOIN FETCH` query optimizations.
-- **Database**:
-  - Embedded H2 database configured by default for zero-friction local execution.
-  - Full MySQL dialect and driver support configured in `application-mysql.properties`.
-- **Frontend / View Layer**: Thymeleaf 3 with Spring Security extras (`sec:authorize`).
-- **Styling**: Custom modern design system (`portal.css`) featuring glassmorphism, responsive sidebar, Outfit & Plus Jakarta Sans typography, and subtle micro-interactions.
-- **Interactive Layer**: Vanilla JavaScript (`portal.js`) with asynchronous REST API integrations.
+The **Client Portal & Project Management System** bridges the communication gap between agencies and enterprise clients. It replaces fragmented email threads, scattered spreadsheet trackers, and third-party file links with a unified, role-governed client portal.
+
+- **Dual Personas & Multi-Tenant Scoping**: Agency Leads (`ROLE_ADMIN`) oversee all operations, while Clients (`ROLE_CLIENT`) have access restricted strictly to their assigned organization's projects, milestones, invoices, and documents.
+- **Interactive Review Cycles**: Clients review staging releases and Figma prototypes directly within the portal, formally submitting **Approved** or **Changes Requested** decisions with detailed feedback notes.
+- **Dynamic Milestone Roadmaps**: Real-time progress percentage recalculations and toggleable completion checklists.
+- **Comprehensive Financial Center**: Multi-status invoice management (`PAID`, `SENT`, `OVERDUE`) with tax/VAT computation, printable statements, and simulated payment gateways.
+- **Secure Document Vault**: Categorized asset repository with drag-and-drop file upload and authenticated download access.
+- **Threaded Discussion Room**: Project-specific messaging with author attribution and real-time polling REST API endpoints.
 
 ---
 
-## 🏃 Getting Started
+## 📸 Screenshots
+
+### Executive Dashboard
+![Client Portal Dashboard](docs/screenshots/dashboard-preview.png)
+*High-contrast executive dashboard displaying active engagements, approval queues, financial metrics, and recent activity feed.*
+
+---
+
+### Core Module Views
+
+| Module | Interface Preview & Description |
+| :--- | :--- |
+| **Projects & Engagements** | Comprehensive engagement portfolio with completion status, budget utilization, manager assignment, and date ranges. |
+| **Project Details & Milestones** | Multi-tab command center featuring interactive milestone roadmaps, live progress meters, and phase checklists. |
+| **Deliverables & Client Review** | Version-tracked assets (`v1.0`, `v0.8-beta`) with direct preview links and official approval/change request modals. |
+| **Invoices & Billing** | Financial health overview with invoice generation, payment method logs (Stripe, ACH, Wire), and printable tax invoices. |
+| **Files & Asset Vault** | Filterable document repository by category (`Contract`, `Design Spec`, `Deliverable`, `Brand Guide`) with instant download. |
+| **Discussion & Messaging** | Dedicated chat room per project featuring threaded conversation bubbles and live REST polling. |
+
+---
+
+## 👥 User Roles & Authentication
+
+The application enforces fine-grained **Role-Based Access Control (RBAC)** via Spring Security 6:
+
+### 1. Agency Administrator / Project Manager (`ROLE_ADMIN`)
+- Create, update, and manage all client projects and budgets.
+- Define project milestones and assign target completion dates.
+- Submit deliverables for client review with external staging/prototype links.
+- Generate and manage invoice records, log payments, and track revenue.
+- Upload project agreements, SOWs, and architectural specifications.
+- Post official agency updates in project discussion channels.
+
+### 2. Client Contact (`ROLE_CLIENT`)
+- Access scoped strictly to the client's registered organization.
+- View real-time milestone progress and project health.
+- Formally review deliverables: **Approve** or **Request Changes** with structured feedback.
+- View and download invoices and print formatted payment statements.
+- Upload project briefs, feedback documents, and brand assets to the vault.
+- Chat directly with the assigned agency project team in the discussion channel.
+- Access to administrative routes (e.g. `/projects/new`) is strictly blocked (**HTTP 403 Forbidden**).
+
+### Pre-Seeded Demo Credentials
+
+| Role | Username | Password | User Name & Organization |
+| :--- | :--- | :--- | :--- |
+| **Agency Lead / PM** | `admin` | `admin123` | Alex Morgan &bull; Apex Studio Agency |
+| **Client (Acme Corp)** | `acme_client` | `client123` | Sarah Connor &bull; Acme Global Technologies |
+| **Client (Nexus AI)** | `nexus_client` | `client123` | David Zhang &bull; Nexus Intelligence Inc |
+
+> **Note**: The login screen includes **1-click quick-fill buttons** to effortlessly switch between Admin and Client accounts during evaluation. Self-registration is also available via `/register`.
+
+---
+
+## 🛠️ Technologies Used
+
+### Backend
+- **Java 21** (LTS)
+- **Spring Boot 3.3.4**
+- **Spring Security 6** (BCrypt hashing, session authentication, CSRF tokens, method security)
+- **Spring Data JPA & Hibernate 6** (Optimized `JOIN FETCH` queries, transactional services)
+- **Bean Validation (Hibernate Validator / Jakarta Validation)**
+- **HikariCP** (High-performance connection pooling)
+
+### Database
+- **H2 In-Memory Database** (Active by default in `MODE=MySQL` for zero-configuration local execution)
+- **MySQL 8.0** (Production profile configured in `application-mysql.properties`)
+
+### Frontend
+- **Thymeleaf 3** (Server-side templating with Spring Security dialect integration)
+- **Vanilla CSS (Design System)** (`portal.css` — Custom glassmorphism, responsive sidebar, CSS variables, dark theme)
+- **Vanilla JavaScript** (`portal.js` — Client-side modal management, tabs, form validation, and asynchronous REST fetch)
+- **Google Fonts** (Plus Jakarta Sans & Outfit)
+
+---
+
+## 📦 Main Application Modules
+
+### 1. Dashboard (`/dashboard`)
+Role-tailored overview displaying key performance metrics: active projects count, deliverables awaiting review, outstanding financial balances, and a chronological audit log of recent updates across all modules.
+
+### 2. Projects (`/projects`)
+Multi-tenant project portfolio. Displays engagement cards with calculated progress percentages, health badges, target deadlines, assigned agency lead, and client company attribution. Admins can create new engagements via `/projects/new`.
+
+### 3. Milestones & Roadmap (`/projects/{id}?tab=milestones`)
+Phased project roadmaps with target dates and interactive completion toggles. Updating milestone status recalculates overall project completion in real time.
+
+### 4. Deliverables (`/deliverables` or `/projects/{id}?tab=deliverables`)
+Version-controlled asset submissions. Allows clients to inspect deliverables and trigger the interactive review modal to approve or request changes with contextual feedback.
+
+### 5. Invoices & Billing (`/invoices`)
+Financial billing management system with invoice tracking (`DRAFT`, `SENT`, `PAID`, `OVERDUE`). Features a print-ready invoice statement view (`/invoices/{id}`) with tax calculations and payment simulator modal.
+
+### 6. Files & Assets Vault (`/files` or `/projects/{id}?tab=files`)
+Categorized document repository supporting multi-part uploads (contracts, specifications, brand assets) and authenticated streaming downloads. Includes automatic fallback generator for sample demonstration assets.
+
+### 7. Discussion (`/messages` or `/projects/{id}?tab=messages`)
+Centralized communication feed for each client project. Client and agency team members can exchange updates, notes, and questions with timestamps and author badges. Includes background REST API polling at `/api/projects/{id}/messages`.
+
+---
+
+## 🚀 How to Run the Project Locally
 
 ### Prerequisites
-- **Java 21** or later (`java -version`)
-- **Maven 3.9+** (`mvn -v`)
+- **Java Development Kit (JDK) 21** or later:
+  ```bash
+  java -version
+  ```
+- **Apache Maven 3.9+**:
+  ```bash
+  mvn -version
+  ```
 
-### Running the Application
+### Quick Start (Default H2 Database)
 
-1. Open your terminal in the project directory:
+1. Clone or navigate into the repository:
    ```bash
-   cd C:\Users\pujar\.gemini\antigravity-ide\scratch\client-portal
+   cd client-portal
    ```
 
-2. Run with Maven:
+2. Run the application with Maven:
    ```bash
    mvn spring-boot:run
    ```
 
-3. Open your browser and navigate to:
+3. Open your web browser and navigate to:
    ```
    http://localhost:8080
    ```
 
-### Running with MySQL
+4. Log in using any of the demo accounts listed above (or use the one-click quick-fill buttons).
 
-By default, the application runs on H2 in-memory mode for instant execution. To run against your local MySQL service:
+---
 
-1. Create database:
+### Running with MySQL 8.0
+
+To run against your local MySQL service:
+
+1. Create the MySQL database:
    ```sql
-   CREATE DATABASE client_portal;
+   CREATE DATABASE client_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-2. Run with the MySQL profile:
+
+2. Start the application using the `mysql` Spring profile:
    ```bash
+   mvn spring-boot:run -Dspring-boot.run.profiles=mysql -Dspring-boot.run.arguments="--spring.datasource.username=root --spring.datasource.password=YOUR_PASSWORD"
+   ```
+
+3. Alternatively, export environment variables:
+   ```bash
+   export SPRING_DATASOURCE_USERNAME=root
+   export SPRING_DATASOURCE_PASSWORD=YOUR_PASSWORD
    mvn spring-boot:run -Dspring-boot.run.profiles=mysql
    ```
-   *(Update username/password in `src/main/resources/application-mysql.properties` if needed)*
 
 ---
 
-## 🔑 Demo Login Accounts
+## 🧪 Testing & Verification
 
-The application automatically seeds realistic data on first startup:
+Execute the complete automated test suite (including Spring Security authentication, RBAC authorization, and MockMvc controller tests):
 
-| Role | Username | Password | Display Name & Organization |
-| :--- | :--- | :--- | :--- |
-| **Agency Admin / PM** | `admin` | `admin123` | Alex Morgan &bull; Apex Studio Agency |
-| **Client 1** | `acme_client` | `client123` | Sarah Connor &bull; Acme Global Technologies |
-| **Client 2** | `nexus_client` | `client123` | David Zhang &bull; Nexus Intelligence Inc |
+```bash
+mvn test
+```
 
-> **Tip**: The login screen features **1-click quick-fill buttons** to effortlessly test between Agency Admin and Client personas.
+Build the production executable JAR:
+
+```bash
+mvn clean package -DskipTests
+java -jar target/client-portal-1.0.0-SNAPSHOT.jar
+```
 
 ---
 
-## 📂 Project Structure
+## 🔗 GitHub Repository
 
-```
-client-portal/
-├── pom.xml
-├── src/
-│   ├── main/
-│   │   ├── java/com/agency/clientportal/
-│   │   │   ├── ClientPortalApplication.java
-│   │   │   ├── config/             # SecurityConfig, DataInitializer
-│   │   │   ├── controller/         # Auth, Dashboard, Project, Deliverable, Invoice, File, Message, RestApi
-│   │   │   ├── dto/                # Form validation objects (@Valid)
-│   │   │   ├── entity/             # User, Role, Project, Milestone, Deliverable, Invoice, FileDocument, Message
-│   │   │   ├── repository/         # Spring Data JPA repositories with custom queries
-│   │   │   └── service/            # Transactional business logic & Security user details
-│   │   └── resources/
-│   │       ├── application.properties
-│   │       ├── application-mysql.properties
-│   │       ├── static/
-│   │       │   ├── css/portal.css  # Modern CSS design system
-│   │       │   └── js/portal.js    # Interactive modal, tab, and AJAX scripts
-│   │       └── templates/          # Thymeleaf templates (layout, auth, dashboard, projects, etc.)
-│   └── test/                       # Spring Boot integration tests
-```
+- **Repository**: [https://github.com/Prasad0709-ai/client-portal](https://github.com/Prasad0709-ai/client-portal)
+- **Branch**: `main`
+
+---
+
+## 🔮 Future Improvements
+
+- **Real-Time WebSockets (STOMP)**: Replace REST polling with bidirectional WebSockets for instant message delivery and live typing indicators.
+- **Stripe & PayPal Live Integration**: Connect the invoice billing simulator with live Stripe Checkout webhooks for real-time card and bank settlement.
+- **Cloud Storage (AWS S3 / GCS)**: Support cloud object storage for enterprise-scale document hosting with signed URLs.
+- **Email & Slack Notifications**: Automated email notifications (SendGrid / JavaMail) on deliverable review status changes and invoice payment receipts.
+- **Audit Logging & Export**: Downloadable project summary reports in PDF and CSV format.
